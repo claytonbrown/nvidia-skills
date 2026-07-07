@@ -215,15 +215,27 @@ def load_components() -> dict[str, dict]:
             if not isinstance(spath, str) or not spath:
                 continue
             spath = spath.rstrip("/")
-            # Only catalog `skills/...` paths; ignore source-side paths
-            # like .claude/skills/ that some products carry.
-            if not spath.startswith("skills/"):
+            # Key by the CATALOG path, not the source-repo path. The yml
+            # `path` reflects the source repo's layout (which may nest skills
+            # under product subdirs, e.g. TAO's skills/models/<name>/), while
+            # lookups in build_skill_entry use the catalog-side skills/<dir>
+            # path. catalog_dir is the invariant between the two.
+            catalog_dir = entry.get("catalog_dir")
+            if isinstance(catalog_dir, str) and catalog_dir.strip():
+                key = f"skills/{catalog_dir.strip().rstrip('/')}"
+            elif spath.startswith("skills/"):
+                # Legacy entries without catalog_dir: source path is assumed
+                # catalog-shaped (pre-AIQ-flat sweeps).
+                key = spath
+            else:
+                # Source-side paths like .claude/skills/ with no catalog_dir
+                # cannot be mapped to a catalog location.
                 continue
-            mapping[spath] = {
+            mapping[key] = {
                 "component_name": cname,
                 "component_repo": crepo,
                 "components_file": ymlf.name,
-                "catalog_dir": entry.get("catalog_dir"),
+                "catalog_dir": catalog_dir,
             }
     return mapping
 
@@ -665,12 +677,15 @@ def build_skill_entry(
     carried = existing_valid_metadata(skill, baseline, rename_map, schema_validator) or {}
     metadata: dict[str, str] = {k: carried[k] for k in MVP_FIELDS if k in carried}
 
-    # Free deterministic improvement: if we know the component name and it
-    # matches a taxonomy enum, prefer it over a stale baseline value only when
-    # the baseline value is missing.
+    # Deterministic mapping wins: when the skill's registered component name
+    # is a valid taxonomy value, it is authoritative for product.primary —
+    # including over a carried baseline value. AI-enriched baselines can be
+    # wrong (e.g. TAO skills labeled "Cosmos"/"Brev" from content inference)
+    # and would otherwise persist forever, breaking product grouping on
+    # downstream surfaces that read this file.
     product_enum = taxonomy["product.primary"]["values"]
     derived_product = derive_product_from_component(component, product_enum)
-    if "product.primary" not in metadata and derived_product:
+    if derived_product:
         metadata["product.primary"] = derived_product
 
     missing = missing_required_fields(metadata)

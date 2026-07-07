@@ -1853,7 +1853,7 @@
       "name": "tao-analyze-gaps-vlm-bcq",
       "description": "Extract false-positive and false-negative gaps from VLM binary-classification-question (BCQ, yes/no) predictions. Use when the user asks to \"analyze VLM BCQ gaps\", \"extract VLM false positives and false negatives\", or identify failure cases from a predictions JSON for DEFT root-cause analysis on a binary-classification VLM workflow.",
       "metadata": {
-        "product.primary": "TAO",
+        "product.primary": "TAO Toolkit",
         "classification.category.primary": "ai_and_machine_learning",
         "catalog.subdomain": "vision-ai",
         "audience": "ml_engineer,ai_engineer,data_scientist,developer",
@@ -1865,7 +1865,7 @@
       "name": "tao-convert-dataset-format",
       "description": "Run `tao-daft convert` to convert NVIDIA TAO DAFT datasets between supported formats. Do not use for non-DAFT data. Use when the user asks to convert a DAFT dataset, change DAFT format, change a TAO dataset format, or run `tao-daft convert`.",
       "metadata": {
-        "product.primary": "TAO",
+        "product.primary": "TAO Toolkit",
         "classification.category.primary": "ai_and_machine_learning",
         "catalog.subdomain": "training-ai",
         "audience": "ml_engineer,ai_engineer,data_engineer,developer",
@@ -1901,7 +1901,7 @@
       "name": "tao-finetune-cosmos-reason",
       "description": "Cosmos3-Nano video QA supervised fine-tuning with FSDP parallelism. Use when training or evaluating video question-answering models, fine-tuning Cosmos3-Nano or compatible Cosmos Reason models with SFT/LoRA, or working with Cosmos-RL. Trigger phrases include \"fine-tune Cosmos\", \"Cosmos3 Nano Reasoner\", \"Cosmos-RL SFT\", \"video QA fine-tune\", \"Cosmos3-Nano training\".",
       "metadata": {
-        "product.primary": "Cosmos",
+        "product.primary": "TAO Toolkit",
         "classification.category.primary": "ai_and_machine_learning",
         "catalog.subdomain": "training-ai",
         "audience": "ml_engineer,ai_engineer,data_scientist,research_academic,developer",
@@ -1949,7 +1949,7 @@
       "name": "tao-generate-video-reasoning-annotations",
       "description": "Multi-step video annotation pipeline that turns raw videos into Chain-of-Thought training data — multi-level captions, structured descriptions, and QA pairs (MCQ, binary, open-ended) with reasoning traces, via VLM/LLM distillation. Use when the user wants to \"create video training data\", \"generate video QA datasets\", \"build CoT reasoning traces from videos\", \"auto-label videos\", or run the video_reasoning_annotation pipeline. Triggers include \"video annotation\", \"video CoT\", \"video QA\", \"chain-of-thought\", \"video captioning pipeline\", \"video distillation\".",
       "metadata": {
-        "product.primary": "TAO",
+        "product.primary": "TAO Toolkit",
         "classification.category.primary": "ai_and_machine_learning",
         "catalog.subdomain": "training-ai",
         "audience": "data_engineer,ml_engineer,ai_engineer,application_developer",
@@ -2069,7 +2069,7 @@
       "name": "tao-run-on-brev",
       "description": "Brev managed GPU instances with Docker support. Use when running TAO training, evaluation, or inference on Brev GPU instances, managing Brev deployments, or dispatching TAO jobs through the Brev CLI. Trigger phrases include \"run on Brev\", \"Brev GPU instance\", \"submit job to Brev\", \"Brev CLI deployment\".",
       "metadata": {
-        "product.primary": "Brev",
+        "product.primary": "TAO Toolkit",
         "classification.category.primary": "infrastructure",
         "catalog.subdomain": "infrastructure",
         "audience": "ml_engineer,ai_engineer,devops_engineer,platform_engineer,developer",
@@ -2089,23 +2089,11 @@
       }
     },
     {
-      "path": "skills/tao-run-on-lepton",
-      "name": "tao-run-on-lepton",
-      "description": "DGX Cloud Lepton managed GPU compute platform with run/status/cancel interface. Use when submitting TAO jobs to DGX Cloud, dispatching training/eval/inference to Lepton GPU resources, or managing Lepton workspace deployments. Trigger phrases include \"run on Lepton\", \"submit to DGX Cloud\", \"Lepton job\", \"managed GPU on DGX Cloud\".",
-      "metadata": {
-        "product.primary": "DGX Cloud",
-        "classification.category.primary": "infrastructure",
-        "catalog.subdomain": "infrastructure",
-        "audience": "ml_engineer,ai_engineer,platform_engineer,devops_engineer",
-        "discovery.activity_tags": "orchestrate,deploy,train,inference,monitor"
-      }
-    },
-    {
       "path": "skills/tao-run-on-local-docker",
       "name": "tao-run-on-local-docker",
       "description": "Local or remote Docker execution for TAO SDK job containers using a Docker daemon with NVIDIA GPU runtime. Use when running TAO jobs on the current machine, a directly attached Docker host, or a remote GPU box exposed through DOCKER_HOST. Trigger phrases include \"run locally\", \"local Docker\", \"remote Docker\", \"use my GPU\", \"run on my machine\", \"host Docker daemon\".",
       "metadata": {
-        "product.primary": "TAO",
+        "product.primary": "TAO Toolkit",
         "classification.category.primary": "ai_and_machine_learning",
         "catalog.subdomain": "training-ai",
         "audience": "ml_engineer,ai_engineer,developer,devops_engineer,platform_engineer",
@@ -2117,7 +2105,7 @@
       "name": "tao-run-on-slurm",
       "description": "Remote SLURM GPU cluster execution over SSH with sbatch/srun, Pyxis/Enroot containers, and Lustre-backed results. Use when running TAO training/eval/inference jobs on an on-prem or DGX SLURM cluster. Trigger phrases include \"run on SLURM\", \"submit sbatch\", \"DGX SLURM cluster\", \"Pyxis/Enroot container\", \"Lustre dataset\".",
       "metadata": {
-        "product.primary": "TAO",
+        "product.primary": "TAO Toolkit",
         "classification.category.primary": "infrastructure",
         "catalog.subdomain": "infrastructure",
         "audience": "platform_engineer,devops_engineer,ml_engineer,hpc_developer,ai_engineer",
@@ -2129,7 +2117,7 @@
       "name": "tao-run-platform",
       "description": "TAO Execution SDK for submitting and monitoring GPU training jobs on supported platforms (Brev, SLURM, local Docker, Kubernetes). Use when the user wants to run TAO jobs through the SDK, get job tracking, S3 I/O wrapping, multi-node distributed training, or platform-specific features that docker-run can't provide. Trigger phrases include \"use the TAO SDK\", \"call tao_sdk\", \"AutoMLRunner\", \"ActionWorkflow\", \"Job handles\", \"S3 I/O wrapping\", \"TAO platform run\".",
       "metadata": {
-        "product.primary": "TAO Toolkit API",
+        "product.primary": "TAO Toolkit",
         "classification.category.primary": "ai_and_machine_learning",
         "catalog.subdomain": "training-ai",
         "audience": "ml_engineer,ai_engineer,platform_engineer,devops_engineer,developer",

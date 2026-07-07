@@ -305,7 +305,6 @@
         "jetson-promote-image",
         "tao-run-on-brev",
         "tao-run-on-kubernetes",
-        "tao-run-on-lepton",
         "tao-run-on-slurm",
         "tao-setup-nvidia-gpu-host"
       ]
