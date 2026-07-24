@@ -215,15 +215,27 @@ def load_components() -> dict[str, dict]:
             if not isinstance(spath, str) or not spath:
                 continue
             spath = spath.rstrip("/")
-            # Only catalog `skills/...` paths; ignore source-side paths
-            # like .claude/skills/ that some products carry.
-            if not spath.startswith("skills/"):
+            # Key by the CATALOG path, not the source-repo path. The yml
+            # `path` reflects the source repo's layout (which may nest skills
+            # under product subdirs, e.g. TAO's skills/models/<name>/), while
+            # lookups in build_skill_entry use the catalog-side skills/<dir>
+            # path. catalog_dir is the invariant between the two.
+            catalog_dir = entry.get("catalog_dir")
+            if isinstance(catalog_dir, str) and catalog_dir.strip():
+                key = f"skills/{catalog_dir.strip().rstrip('/')}"
+            elif spath.startswith("skills/"):
+                # Legacy entries without catalog_dir: source path is assumed
+                # catalog-shaped (pre-AIQ-flat sweeps).
+                key = spath
+            else:
+                # Source-side paths like .claude/skills/ with no catalog_dir
+                # cannot be mapped to a catalog location.
                 continue
-            mapping[spath] = {
+            mapping[key] = {
                 "component_name": cname,
                 "component_repo": crepo,
                 "components_file": ymlf.name,
-                "catalog_dir": entry.get("catalog_dir"),
+                "catalog_dir": catalog_dir,
             }
     return mapping
 
@@ -543,7 +555,13 @@ class _AIClient:
                     "content": json.dumps(user, ensure_ascii=False, default=str),
                 },
             ],
-            "max_tokens": 512,
+            # Reasoning models spend completion budget on hidden reasoning
+            # tokens BEFORE any visible content. 512 was routinely exhausted
+            # mid-reasoning, returning an empty `content` with
+            # finish_reason=length (seen deterministically on
+            # nemo-relay-debug-runtime-integration, 2026-07-17). The task
+            # output itself is tiny; the headroom is for reasoning.
+            "max_tokens": 4096,
             "response_format": {"type": "json_object"},
         }
 
@@ -596,20 +614,48 @@ class _AIClient:
                     f"Inference API returned HTTP {resp.status_code} after "
                     f"{_RETRY_ATTEMPTS + 1} attempts: {resp.text[:500]}"
                 )
-            break  # success or a non-retryable error code
+            if resp.status_code != 200:
+                raise EnrichmentError(
+                    f"Inference API returned HTTP {resp.status_code}: {resp.text[:500]}"
+                )
 
-        if resp.status_code != 200:
-            raise EnrichmentError(
-                f"Inference API returned HTTP {resp.status_code}: {resp.text[:500]}"
-            )
-        try:
-            payload = resp.json()
-            content = payload["choices"][0]["message"]["content"]
-            obj = json.loads(content)
-        except (KeyError, ValueError, TypeError) as exc:
-            raise EnrichmentError(
-                f"Inference API returned malformed JSON: {exc}"
-            ) from exc
+            # Parse inside the retry loop: an empty or non-JSON `content`
+            # (e.g. completion budget exhausted by reasoning tokens, or a
+            # transiently garbled response) is retryable, not terminal.
+            # Raising here used to silently drop the skill from the output.
+            payload = None
+            content = None
+            try:
+                payload = resp.json()
+                content = payload["choices"][0]["message"]["content"]
+                obj = json.loads(content)
+            except (KeyError, ValueError, TypeError) as exc:
+                finish = None
+                if isinstance(payload, dict):
+                    try:
+                        finish = payload["choices"][0].get("finish_reason")
+                    except (KeyError, IndexError, TypeError, AttributeError):
+                        pass
+                last_error = (
+                    f"malformed JSON: {exc} "
+                    f"(finish_reason={finish!r}, content={str(content)[:200]!r})"
+                )
+                if attempt < _RETRY_ATTEMPTS:
+                    wait = _RETRY_BASE_SECONDS * (2 ** attempt)
+                    print(
+                        f"  [retry {attempt + 1}/{_RETRY_ATTEMPTS}] "
+                        f"unusable response for {skill.path} ({last_error}); "
+                        f"retrying in {wait}s…",
+                        file=sys.stderr,
+                    )
+                    time.sleep(wait)
+                    continue
+                raise EnrichmentError(
+                    f"Inference API returned malformed JSON after "
+                    f"{_RETRY_ATTEMPTS + 1} attempts: {last_error}"
+                ) from exc
+            break  # parsed successfully
+
         if not isinstance(obj, dict):
             raise EnrichmentError("Inference API JSON is not an object.")
 
@@ -665,12 +711,15 @@ def build_skill_entry(
     carried = existing_valid_metadata(skill, baseline, rename_map, schema_validator) or {}
     metadata: dict[str, str] = {k: carried[k] for k in MVP_FIELDS if k in carried}
 
-    # Free deterministic improvement: if we know the component name and it
-    # matches a taxonomy enum, prefer it over a stale baseline value only when
-    # the baseline value is missing.
+    # Deterministic mapping wins: when the skill's registered component name
+    # is a valid taxonomy value, it is authoritative for product.primary —
+    # including over a carried baseline value. AI-enriched baselines can be
+    # wrong (e.g. TAO skills labeled "Cosmos"/"Brev" from content inference)
+    # and would otherwise persist forever, breaking product grouping on
+    # downstream surfaces that read this file.
     product_enum = taxonomy["product.primary"]["values"]
     derived_product = derive_product_from_component(component, product_enum)
-    if "product.primary" not in metadata and derived_product:
+    if derived_product:
         metadata["product.primary"] = derived_product
 
     missing = missing_required_fields(metadata)

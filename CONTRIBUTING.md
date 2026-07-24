@@ -5,7 +5,7 @@
 
 This repository is a catalog of NVIDIA-verified agent skills. Skills are maintained by each product team in their own repos.
 
-To contribute to a skill or propose a new one, use the contributing guidelines in the relevant source repo. See the [Available Skills](README.md#available-skills) and [Getting Help & Contributing](README.md#getting-help--contributing) sections in the README for links.
+To contribute to a skill or propose a new one, use the contributing guidelines in the relevant source repo. See the [Skill Catalog](README.md#skill-catalog) and [Getting Help & Contributing](README.md#getting-help--contributing) sections in the README for links.
 
 For changes to the catalog itself (fixing links, adding a new product listing), open a [pull request](../../pulls). For catalog-level bug reports, feature proposals, or documentation problems, file an [issue](../../issues/new/choose) using one of the catalog issue templates (Bug Report, Feature Request, Documentation Request or Correction). Questions and general discussion belong in [Discussions](../../discussions); security vulnerabilities follow the disclosure process in [SECURITY.md](SECURITY.md).
 
@@ -18,6 +18,18 @@ Use `.agents/skills/` for installed skills that agents discover at runtime, or f
 Avoid agent-specific paths in the repo (`.claude/skills/`, `.codex/skills/`, `.cursor/skills/`) for new entries — they create duplication. Existing products on those paths can keep them; `components.d/<slug>.yml` handles per-repo paths via the `skills[].path` field.
 
 At install time, your tooling or packaging can copy or symlink from `skills/` into the appropriate agent discovery locations (for example `.agents/skills/`, `.claude/skills/`, `.codex/skills/`) as required by each tool.
+
+## Discoverability Checklist (Source Repos)
+
+GitHub search ranks repositories on metadata and engagement, not just content. Before (or right after) onboarding your skills to the catalog, check your source repo:
+
+- [ ] **Repo description** names what developers search for: the product, the workflow, and "agent skills" (for example, "Agent skills for video search and summarization with VLMs and RAG"), not just the product name.
+- [ ] **GitHub topics** are set (Settings → edit topics): include `agent-skills` plus your domain terms (`robotics`, `video-understanding`, `synthetic-data`, ...). Repos with no topics do not surface in topic browsing or filtered search.
+- [ ] **README opens with a two-sentence value proposition** using those same search terms, before badges or tables of contents.
+- [ ] **License is detected by GitHub**: the repo sidebar should show your license name. If it shows "Other" or "View license", GitHub could not parse your license file and the repo is excluded from license-filtered searches.
+- [ ] **Social preview image** is set (Settings → Social preview, 1280×640) so shared links render a card instead of a blank tile.
+
+These apply to the *source* repo; the catalog repo's own metadata is maintained by the catalog team.
 
 ## IP Review and License (External Skills)
 
